@@ -5,9 +5,12 @@ import { shapeIntoMongooseObjectId } from "../libs/config";
 import { T } from "../libs/types/common";
 import { ServiceStatus } from "../libs/enums/service.enum";
 import { ObjectId } from "mongoose";
+import { ViewInput } from "../libs/types/view";
+import { ViewGroup } from "../libs/enums/view.enum";
 
 class CuttingService {
     private readonly serviceModel;
+    viewService: any;
 
 
     constructor() {
@@ -49,7 +52,7 @@ class CuttingService {
     public async getService(
         memberId: ObjectId | null,
         id: string
-    ): Promise<Service> {
+    ): Promise<any> {
         const serviceId = shapeIntoMongooseObjectId(id);
 
         let result = await this.serviceModel
@@ -61,11 +64,34 @@ class CuttingService {
 
         if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
-        // TODO: If authenticated users => first => view log creation
+        if (memberId) {
+            // Check Existence
+            const input: ViewInput = {
+                memberId: memberId,
+                viewRefId: serviceId,
+                viewGroup: ViewGroup.SERVICE,
+            };
 
-        return result as unknown as Service;
+            const existView = await this.viewService.checkViewExistence(input);
+
+            console.log("exist:", !!existView);
+
+            if (!existView) {
+                // Insert View
+                await this.viewService.insertMemberView(input);
+
+                // Increase Counts
+                result = await this.serviceModel
+                    .findByIdAndUpdate(
+                        serviceId,
+                        { $inc: { productViews: +1 } },
+                        { new: true }
+                    )
+                    .exec();
+            }
+            return result as unknown as Service;
+        }
     }
-
 
     /** BSSR============ */
 
