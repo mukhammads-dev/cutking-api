@@ -4,6 +4,7 @@ import ServiceModel from "../schema/Service.model";
 import { shapeIntoMongooseObjectId } from "../libs/config";
 import { T } from "../libs/types/common";
 import { ServiceStatus } from "../libs/enums/service.enum";
+import { ObjectId } from "mongoose";
 
 class CuttingService {
     private readonly serviceModel;
@@ -42,23 +43,28 @@ class CuttingService {
 
         if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
-        return result;
+        return result as unknown as Service[];
     }
 
+    public async getService(
+        memberId: ObjectId | null,
+        id: string
+    ): Promise<Service> {
+        const serviceId = shapeIntoMongooseObjectId(id);
 
+        let result = await this.serviceModel
+            .findOne({
+                _id: serviceId,
+                serviceStatus: ServiceStatus.PROCESS,
+            })
+            .exec();
 
+        if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
+        // TODO: If authenticated users => first => view log creation
 
-
-
-
-
-
-
-
-
-
-
+        return result as unknown as Service;
+    }
 
 
     /** BSSR============ */
@@ -67,7 +73,7 @@ class CuttingService {
         const result = await this.serviceModel.find().exec();
         if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND)
 
-        return result as unknown as Service[];
+        return result.map(doc => doc.toJSON()) as unknown as Service[];
 
     }
 
