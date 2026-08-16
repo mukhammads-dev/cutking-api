@@ -3,7 +3,7 @@ const router = express.Router();
 import memberController from "./controllers/member.controller";
 import uploader from "./libs/utils/uploader";
 import serviceController from "./controllers/service.controller";
-import barberController from "./controllers/barber.controller";
+import bookingController from "./controllers/booking.controller";
 
 /** Member */
 router.get("/member/barber", memberController.getBarber);
@@ -30,6 +30,18 @@ router.get("/services/:id",
     memberController.retrieveAuth,
     serviceController.getService
 );
-/** Bookings */
 
+/** Bookings */
+router.post("/booking/create",
+    memberController.veryfyAuth,
+    bookingController.createBooking
+);
+router.get("/booking/all",
+    memberController.veryfyAuth,
+    bookingController.getMyBookings
+);
+router.post("/booking/update",
+    memberController.veryfyAuth,
+    bookingController.updateBooking
+);
 export default router; 

@@ -5,10 +5,10 @@ import routerAdmin from "./routerAdmin";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { MORGAN_FORMAT } from "./libs/config";
-
 import session from "express-session"; // Md integration to our webserver
 import ConnectMongoDB from "connect-mongodb-session";
 import { T } from "./libs/types/common";
+import cors from "cors";
 
 const MongoDBStore = ConnectMongoDB(session)
 const store = new MongoDBStore({
@@ -23,6 +23,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static("./uploads"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser()); // global integratsiya cookie parser
 app.use(morgan(MORGAN_FORMAT));
 
@@ -58,4 +59,4 @@ app.use("/", router);            // SPA: REACT for users
 
 
 
-export default app; 
+export default app;

@@ -11,6 +11,8 @@ export interface Service {
     serviceDesc?: string;
     serviceImages: string[];
     serviceViews: number;
+    createdAt: Date;
+    updatedAt: Date
 }
 
 
