@@ -47,5 +47,5 @@ export interface ServiceUpdateInput {
     serviceDuration?: number;
     serviceDesc?: string;
     serviceImages?: string[];
-    productViews?: number;
+    serviceViews?: number;
 }

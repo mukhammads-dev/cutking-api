@@ -1,6 +1,15 @@
 node_modules
 dist
 
+# env
 .env
+.env.*
+!.env.example
 
+# user uploads (VPS'da alohida saqlanadi)
 uploads
+
+# OS / editor
+.DS_Store
+*.log
+logs

@@ -20,6 +20,9 @@ class BookingService {
         member: Member,
         input: BookingItemInput[]
     ): Promise<Booking> {
+        if (!Array.isArray(input) || input.length === 0)
+            throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
+
         const memberId = shapeIntoMongooseObjectId(member._id);
 
         const amount = input.reduce(

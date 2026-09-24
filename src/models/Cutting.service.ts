@@ -7,15 +7,16 @@ import { ServiceStatus } from "../libs/enums/service.enum";
 import { ObjectId } from "mongoose";
 import { ViewInput } from "../libs/types/view";
 import { ViewGroup } from "../libs/enums/view.enum";
+import ViewService from "./View.service";
 
 class CuttingService {
     private readonly serviceModel;
-    viewService: any;
+    private readonly viewService: ViewService;
 
 
     constructor() {
         this.serviceModel = ServiceModel;
-
+        this.viewService = new ViewService();
     }
     /** SPA=========== */
 
@@ -27,11 +28,11 @@ class CuttingService {
             match.serviceCollection = inquiry.serviceCollection;
 
         if (inquiry.search) {
-            match.productName = { $regex: new RegExp(inquiry.search, "i") };
+            match.serviceName = { $regex: new RegExp(inquiry.search, "i") };
         }
 
         const sort: T =
-            inquiry.booking === "servicePrise"
+            inquiry.booking === "servicePrice"
                 ? { [inquiry.booking]: 1 } // prise: eng arzonidan yuqoriga
                 : { [inquiry.booking]: -1 }; // created at: eng ohirgi qoshilgandan pastga qarab
 
@@ -84,13 +85,14 @@ class CuttingService {
                 result = await this.serviceModel
                     .findByIdAndUpdate(
                         serviceId,
-                        { $inc: { productViews: +1 } },
+                        { $inc: { serviceViews: +1 } },
                         { new: true }
                     )
                     .exec();
             }
-            return result as unknown as Service;
         }
+
+        return result as unknown as Service;
     }
 
     /** BSSR============ */

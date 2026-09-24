@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { T } from "../libs/types/common"
 import MemberService from "../models/Member.service";
 import { AdminRequest, LoginInput, MemberInput } from "../libs/types/member";
@@ -77,7 +77,6 @@ barberController.processSignup = async (req: AdminRequest, res: Response) => {
 barberController.processLogin = async (req: AdminRequest, res: Response) => {
     try {
         console.log('processLogin')
-        console.log("body:", req.body)
         const input: LoginInput = req.body;
 
         const result = await memberService.processLogin(input);
@@ -113,19 +112,6 @@ barberController.logout = async (req: AdminRequest, res: Response) => {
 };
 
 
-barberController.checkAuthSession = async (req: AdminRequest, res: Response) => {
-    try {
-        console.log('checkAuthSession')
-        if (req.session?.member)
-            res.send(`<script>alert("${req.session.member.memberNick}")</script>`)
-        else res.send(`<script>alert("${Message.NOT_AUTHENTICATED}")</script>`);
-
-    }
-    catch (err) {
-        console.log("Error, checkAuthSession:", err)
-        res.send(err);
-    }
-};
 
 
 barberController.veryfyBarbershop = (
@@ -133,7 +119,7 @@ barberController.veryfyBarbershop = (
     res: Response,
     next: NextFunction
 ) => {
-    // req.session icidan member check qilamiz typeRestaurant bolsh shart
+    // req.session ichidagi member BARBER bo'lishi shart
     if (req.session?.member?.memberType === MemberType.BARBER) {
         req.member = req.session.member; // type checking
         next();
@@ -164,11 +150,13 @@ barberController.getUsers = async (req: Request, res: Response) => {
     try {
         console.log('getUsers')
         const result = await memberService.getUsers();
-        console.log("result:", result)
 
         res.render("users", { users: result });
     }
-    catch (err) { console.log(err) }
+    catch (err) {
+        console.log("Error, getUsers:", err);
+        res.redirect("/admin");
+    }
 }
 
 
@@ -180,25 +168,12 @@ barberController.updateChosenUser = async (req: Request, res: Response) => {
         res.status(HttpCode.OK).json({ data: result });
     }
     catch (err) {
-        console.log("Error, signup:", err)
+        console.log("Error, updateChosenUser:", err)
         if (err instanceof Errors) res.status(err.code).json(err)
         else res.status(Errors.standard.code).json(Errors.standard);
     }
 };
 
-// hardcoding
-
-barberController.getDashboard = (req: Request, res: Response) => {
-    try {
-        res.render("dashboard", {
-            member: { memberNick: "CutKing" },  // hardcode
-            services: [],
-            users: [],
-            masters: []
-        });
-    }
-    catch (err) { console.log(err) }
-};
 
 
 

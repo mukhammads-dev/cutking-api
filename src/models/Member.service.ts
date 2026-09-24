@@ -38,9 +38,11 @@ class MemberService {
 
             return result.toJSON() as unknown as Member;
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error, model:signup", err);
-            throw new Errors(HttpCode.BAD_REQUEST, Message.USED_NICK_PHONE);
+            if (err?.code === 11000)
+                throw new Errors(HttpCode.BAD_REQUEST, Message.USED_NICK_PHONE);
+            throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
         }
     }
 
@@ -103,6 +105,21 @@ class MemberService {
         return result.map((item) => item.toJSON() as unknown as Member);
     }
 
+    public async getMasters(): Promise<Member[]> {
+        const result = await this.memberModel
+            .find({
+                memberType: MemberType.MASTER,
+                memberStatus: MemberStatus.ACTIVE,
+            })
+            .sort({ createdAt: -1 })
+            .lean() // plain JS objectga ogirib beradi
+            .exec();
+
+        if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+        return result as unknown as Member[];
+    }
+
 
     /** BSSR============ */
 
@@ -120,7 +137,10 @@ class MemberService {
             const result = await this.memberModel.create(input);
             result.memberPassword = "";
             return result.toJSON() as unknown as Member;
-        } catch (err) {
+        } catch (err: any) {
+            console.error("Error, model:processSignup", err);
+            if (err?.code === 11000)
+                throw new Errors(HttpCode.BAD_REQUEST, Message.USED_NICK_PHONE);
             throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
         }
     }
@@ -128,7 +148,7 @@ class MemberService {
     public async processLogin(input: LoginInput): Promise<Member> {
         const member = await this.memberModel
             .findOne(
-                { memberNick: input.memberNick, memberType: MemberType.RESTAURANT },
+                { memberNick: input.memberNick, memberType: MemberType.BARBER },
                 { memberNick: 1, memberPassword: 1 }
             )
             .lean()

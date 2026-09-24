@@ -5,7 +5,7 @@ import { v4 } from "uuid";
 
 
 /** MULTER IMAGE UPLOADER */
-function getTargetImageStorage(address: any) {
+function getTargetImageStorage(address: string) {
     return multer.diskStorage({
         destination: function (req, file, cb) {
             const dir = `./uploads/${address}`;
@@ -21,27 +21,19 @@ function getTargetImageStorage(address: any) {
 
 }
 
+const ALLOWED_MIME = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
 const makeUploader = (address: string) => {
     const storage = getTargetImageStorage(address);
-    return multer({ storage: storage });
+    return multer({
+        storage: storage,
+        limits: { fileSize: MAX_FILE_SIZE },
+        fileFilter: (req, file, cb) => {
+            // faqat rasm fayllarini qabul qilamiz
+            cb(null, ALLOWED_MIME.includes(file.mimetype));
+        },
+    });
 };
 
 export default makeUploader;
-
-/*
-const product_storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "./uploads/products");
-    },
-    filename: function (req, file, cb) {
-        console.log(file);
-        const extension = path.parse(file.originalname).ext;
-        const random_name = v4() + extension;
-        cb(null, random_name);
-
-    },
-});
-
-export const uploadProductImage = multer({ storage: product_storage });
-
-*/

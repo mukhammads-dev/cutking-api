@@ -22,6 +22,7 @@ router.post("/member/update",
     memberController.updateMember
 );
 router.get("/member/top-users", memberController.getTopUsers);
+router.get("/member/masters", memberController.getMasters);
 
 
 /** Services */

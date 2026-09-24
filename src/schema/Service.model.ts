@@ -6,7 +6,7 @@ const serviceSchema = new Schema(
         serviceStatus: {
             type: String,
             enum: ServiceStatus,
-            default: ServiceStatus.PAUSE,  // ← yangi service PROCESS bo'ladi
+            default: ServiceStatus.PROCESS,  // ← yangi service PROCESS bo'ladi
         },
         serviceCollection: {
             type: String,

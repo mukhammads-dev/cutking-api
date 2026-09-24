@@ -4,7 +4,7 @@ import router from "./router";
 import routerAdmin from "./routerAdmin";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import { MORGAN_FORMAT } from "./libs/config";
+import { COOKIE_SECURE, MORGAN_FORMAT } from "./libs/config";
 import session from "express-session"; // Md integration to our webserver
 import ConnectMongoDB from "connect-mongodb-session";
 import { T } from "./libs/types/common";
@@ -19,11 +19,17 @@ const store = new MongoDBStore({
 
 /** 1-ENTRANCE **/
 const app = express();
+app.set("trust proxy", 1); // nginx orqasida ishlaganda secure cookie uchun
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static("./uploads"));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors({ credentials: true, origin: true }));
+const allowedOrigins = (process.env.CLIENT_URL ?? "")
+    .split(",")
+    .map((url) => url.trim())
+    .filter(Boolean);
+// CLIENT_URL berilmagan bo'lsa (local dev) — har qanday originga ruxsat
+app.use(cors({ credentials: true, origin: allowedOrigins.length ? allowedOrigins : true }));
 app.use(cookieParser()); // global integratsiya cookie parser
 app.use(morgan(MORGAN_FORMAT));
 
@@ -33,11 +39,14 @@ app.use(
         secret: String(process.env.SESSION_SECRET),  // code for creating sessions.. secret.env
         cookie: {
             maxAge: 1000 * 3600 * 3, // session time 3h
+            httpOnly: true,
+            sameSite: "lax",
+            secure: COOKIE_SECURE,
         },
         store: store,   // mongodb store sessions
 
         resave: true,  // 12:00 auth => 15:00, 15:00 auth = 18:00 ends
-        saveUninitialized: true
+        saveUninitialized: false
     })
 )
 

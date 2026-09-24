@@ -8,7 +8,6 @@ import masterController from "./controllers/master.controller";
 /** Barber admin */
 
 routerAdmin.get('/', barberController.goHome);
-routerAdmin.get('/dashboard', barberController.getDashboard);
 
 routerAdmin
     .get('/login', barberController.getLogin)
@@ -19,9 +18,7 @@ routerAdmin
     .post('/signup', makeUploader("members").single("memberImage"),
         barberController.processSignup)
 
-routerAdmin
-    .get('/logout', barberController.logout)
-    .get('/check-me', barberController.checkAuthSession)
+routerAdmin.get('/logout', barberController.logout);
 
 
 
@@ -51,7 +48,7 @@ routerAdmin
         serviceController.getAllServices
     );
 routerAdmin
-    .get('/services/create', serviceController.getServiceCreate)
+    .get('/services/create', barberController.veryfyBarbershop, serviceController.getServiceCreate)
     .post('/services/create',
         barberController.veryfyBarbershop,
         makeUploader("cutting-services").array("serviceImages", 5),
